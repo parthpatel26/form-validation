@@ -17,7 +17,7 @@ function showError(input, message) {
   formControl.className = "form-control error";
   const span = formControl.querySelector("span");
   span.innerText = message;
-  return
+  return true;
 
 }
 
@@ -29,8 +29,7 @@ function showSucces(input) {
   formControl.className = "form-control success";
   const span = formControl.querySelector("span");
   span.innerText = "";
-  return
-
+  return false;
 }
 
 
@@ -40,11 +39,9 @@ function checkEmail(input) {
   const emailValue = /\S+@\S+\.\S+/
 
   if (emailValue.test(input.value.trim())) {
-    showSucces(input);
-    return true
+    return showSucces(input);
   } else {
-    showError(input, "Email is not invalid");
-    return false
+    return showError(input, "Email is not invalid");
   }
 }
 
@@ -52,43 +49,25 @@ function checkPass(input) {
   const passValue = /^(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{6,12}/
   const passLength = /^.{6,12}/
   if (passValue.test(input.value.trim())) {
-    showSucces(input);
-    return true
+    return showSucces(input);
   } else {
-
-    showError(input, "Password must have atleast one UpperCase letter and one special character ");
-    return false
+    return showError(input, "Password must have atleast one UpperCase letter and one special character ");
   }
-  // if (passLength.test(input.value.trim())) {
-  //   showSucces(input);
-  //   return
-
-  // } else {
-  //   showError(input, "Must be Greater than 6 letters")
-  //   return false
-
-  // }
-
 }
 
 
 /////////////////// REQUIRED FIELDS VALIDATION ///////////////////
 function checkRequired(inputArr) {
+	var error = 0;
   inputArr.forEach(function (input) {
     if (input.value.trim() !== "") {
-
       showSucces(input);
-
-      return true
-
     } else {
-
-
+			error++;
       showError(input, `${getFieldName(input)} is required`);
-
-      return false
     }
   });
+	return error;
 }
 
 
@@ -100,22 +79,18 @@ function checkLength(input, min, max) {
   try {
 
     if (input.value.length < min) {
-      showError(
+      return showError(
         input,
         `${getFieldName(input)} must be at least ${min} characters`
       );
-      return
     } else if (input.value.length > max) {
-      showError(
+      return showError(
         input,
         `${getFieldName(input)} must be less than ${max} characters`
       );
-      return
 
     } else {
-      showSucces(input);
-      return true
-
+      return showSucces(input);
     }
   } catch (e) {
     alert(e);
@@ -131,18 +106,17 @@ function getFieldName(input) {
 ////////////  FUNCTION FOR MATCHING PASSWORD AND CONFIRM PASSWORD  ////////////
 function checkPasswordMatch(input1, input2) {
   if (input1.value === input2.value) {
-    showSucces(input2, "")
-    return true
+    return showSucces(input2, "");
   } else {
-    showError(input2, "Confirm Password do not match")
-    return false
-
+    return showError(input2, "Confirm Password do not match");
   }
 }
 
 ///////// SHOWING AND REMOVING ERRORS ON RUNTIME WITH KEYUP EVENT
-fname.addEventListener("keyup", function (e) {
-  checkLength(fname, 3, 15);
+fname.addEventListener("blur", function (e) {
+  if(fname.value !== "")
+    checkLength(fname, 3, 15);
+	else checkRequired([fname]);
 
 })
 
@@ -203,37 +177,42 @@ function checkErr() {
 
 
 function preSubmit() {
-  if (checkLength(fname, 3, 15) === true && checkLength(lname, 3, 15) === true && checkEmail(email) === true && checkPass(password) === true && checkPasswordMatch(password, password2)) {
-    printData()
-  } else {
-    if (fname.value === "") {
-      checkRequired([fname]);
-    } else if (lname.value === "") {
-      checkRequired([lname])
-    } else if (email.value === "") {
-      checkRequired([email])
-    } else if (password.value === "") {
-      checkRequired([password])
-    } else if (password2.value === "") {
-      checkRequired([password2])
-    } else {
-      checkErr()
-    }
+	var errorCode = 0;
 
+	var requireItems = [fname, lname, email, password, password2];
+	errorCode = checkRequired(requireItems);
+  console.log("You have "+errorCode+" require error!");
+  if(errorCode > 0){
+    return false;
+  }
+	
+  if(checkLength(fname, 3, 15)){
+		errorCode++;
+  }
+  if(checkLength(lname, 3, 15)){
+		errorCode++;
+  }
+  if(checkEmail(email)){
+		errorCode++;
+  }
+  if(checkPass(password)){
+		errorCode++;
+  }
+  if(checkPasswordMatch(password, password2)){
+		errorCode++;
+  }
+
+	if(errorCode === 0){
+    printData();
+  }
+	else{
+  	console.log("You have "+errorCode+" error!");
   }
 }
 
 
 btn.addEventListener("click", function (e) {
-
-  // if (fname.value === "" && lname.value === "" && email.value === "" && password.value === "" && password2.value === "") {
-  //   checkRequired([fname, lname, email, password, password2])
-  // } else {
-  //   preSubmit()
-  // }
-
   preSubmit()
-
 })
 
 
